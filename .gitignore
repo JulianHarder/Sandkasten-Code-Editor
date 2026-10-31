@@ -1,0 +1,13 @@
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editoren
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (die Tests brauchen keine Pakete)
+node_modules/

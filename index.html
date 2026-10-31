@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sandkasten-Code-Editor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231e1e1e%27/%3E%3Cpath d=%27M11 9l-6 7 6 7M21 9l6 7-6 7%27 fill=%27none%27 stroke=%27%234fa8ff%27 stroke-width=%273%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar" id="topbar">
+    <div class="brand" title="Sandkasten-Code-Editor">&lt;/&gt; <span>Sandkasten</span></div>
+
+    <div class="seg" id="langSwitch" role="tablist" aria-label="Sprache">
+      <button type="button" data-lang="csharp" class="active" role="tab">C#</button>
+      <button type="button" data-lang="python" role="tab">Python</button>
+    </div>
+
+    <div class="group">
+      <button type="button" class="ibtn" id="btnUndo" title="Rückgängig (Strg+Z)" aria-label="Rückgängig">
+        <svg viewBox="0 0 16 16"><path d="M5.5 3 2 6.5 5.5 10M2.5 6.5H10a4 4 0 0 1 0 8H6"/></svg>
+      </button>
+      <button type="button" class="ibtn" id="btnRedo" title="Wiederholen (Strg+Y)" aria-label="Wiederholen">
+        <svg viewBox="0 0 16 16"><path d="M10.5 3 14 6.5 10.5 10M13.5 6.5H6a4 4 0 0 0 0 8h4"/></svg>
+      </button>
+    </div>
+
+    <label class="toggle" title="Autovervollständigung an/aus (Strg+Leertaste öffnet sie manuell)">
+      <input type="checkbox" id="chkSuggest" checked>
+      <span class="box"></span><span class="lbl">Vorschläge</span>
+    </label>
+
+    <div class="menu" id="menuExamples">
+      <button type="button" class="tbtn" data-menu-toggle>Beispiele <span class="caret">▾</span></button>
+      <div class="menu-pop" data-menu-pop></div>
+    </div>
+
+    <div class="menu" id="menuFile">
+      <button type="button" class="tbtn" data-menu-toggle title="Speichern und Öffnen">
+        <svg class="ico" viewBox="0 0 16 16"><path d="M2.5 2.5h9l2 2v9h-11zM5 2.5v3.5h5V2.5M4.5 13.5V9.5h7v4"/></svg>
+        Datei <span class="caret">▾</span>
+      </button>
+      <div class="menu-pop" data-menu-pop>
+        <button type="button" data-act="save"><span>Speichern …</span><kbd>Strg+S</kbd></button>
+        <button type="button" data-act="open-folder"><span>Ordner öffnen …</span><kbd>Strg+O</kbd></button>
+        <button type="button" data-act="open-files"><span>Dateien öffnen …</span></button>
+        <button type="button" data-act="zip"><span>Als ZIP herunterladen</span></button>
+        <button type="button" data-act="zip-all"><span id="zipAllLabel">Alle Projekte als ZIP herunterladen</span></button>
+        <div class="sep"></div>
+        <button type="button" data-act="format"><span>Code einrücken</span><kbd>Alt+Umschalt+F</kbd></button>
+        <button type="button" data-act="new-file"><span>Neue Datei</span><kbd>Strg+N</kbd></button>
+        <button type="button" data-act="new-project"><span>Neues Projekt …</span></button>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="group">
+      <button type="button" class="ibtn" id="btnLayout" title="Konsole rechts / unten">
+        <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M9.5 3v10" id="layoutIcon"/></svg>
+      </button>
+      <button type="button" class="ibtn" id="btnSplit" title="Geteilte Ansicht: zweite Datei daneben">
+        <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M8 3v10"/></svg>
+      </button>
+      <button type="button" class="ibtn" id="btnSettings" title="Einstellungen" aria-label="Einstellungen">
+        <svg viewBox="0 0 24 24" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+
+    <button type="button" class="runbtn run" id="btnRun" title="Programm starten (F5)">
+      <svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z" fill="currentColor" stroke="none"/></svg> Run
+    </button>
+    <button type="button" class="runbtn stop" id="btnStop" title="Programm abbrechen (Umschalt+F5)" disabled>
+      <svg viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9" rx="1" fill="currentColor" stroke="none"/></svg> Stop
+    </button>
+  </header>
+
+  <div class="main" id="main">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-head">
+        <span class="side-title" id="sideTitle">Projekte</span>
+        <button type="button" class="ibtn small" id="btnToggleSide" title="Seitenleiste einklappen" aria-label="Seitenleiste einklappen">
+          <svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>
+        </button>
+        <button type="button" class="ibtn small" id="btnNewProject" title="Neues Projekt anlegen" aria-label="Neues Projekt">
+          <svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>
+        </button>
+      </div>
+      <div class="filelist" id="fileList" role="list"></div>
+      <div class="side-foot" id="sideHint">Rechtsklick auf ein Projekt oder eine Datei für weitere Aktionen</div>
+    </aside>
+    <button type="button" class="side-open" id="btnOpenSide" title="Seitenleiste ausklappen" aria-label="Seitenleiste ausklappen" hidden>
+      <svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg>
+    </button>
+
+    <div class="work" id="work">
+      <div class="editors" id="editors">
+        <div class="pane" id="pane1">
+          <div class="tabs" id="tabs1" role="tablist"></div>
+          <div class="ed-host" id="edHost1"></div>
+        </div>
+        <div class="pane-split" id="paneSplit" hidden></div>
+        <div class="pane" id="pane2" hidden>
+          <div class="tabs pane2head" id="tabs2">
+            <select id="selPane2" aria-label="Datei im zweiten Fenster"></select>
+            <button type="button" class="ibtn small" id="btnClosePane2" title="Zweites Fenster schließen" aria-label="Zweites Fenster schließen">
+              <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+          </div>
+          <div class="ed-host" id="edHost2"></div>
+        </div>
+      </div>
+
+      <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" title="Ziehen zum Ändern der Größe"></div>
+
+      <section class="console" id="console" aria-label="Ausgabe">
+        <div class="con-head">
+          <span class="con-title">Konsole</span>
+          <span class="con-status" id="conStatus"></span>
+          <span class="spacer"></span>
+          <button type="button" class="ibtn small" id="btnCopy" title="Ausgabe kopieren" aria-label="Ausgabe kopieren">
+            <svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="8" height="8" rx="1.2"/><path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>
+          </button>
+          <button type="button" class="ibtn small" id="btnClear" title="Konsole leeren" aria-label="Konsole leeren">
+            <svg viewBox="0 0 16 16"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5M7 7v4M9 7v4"/></svg>
+          </button>
+          <button type="button" class="ibtn small" id="btnCollapse" title="Konsole ein-/ausklappen (Strg+J)" aria-label="Konsole einklappen">
+            <svg viewBox="0 0 16 16"><path d="M5 3l5 5-5 5" id="collapseIcon"/></svg>
+          </button>
+        </div>
+        <div class="con-body" id="conBody" tabindex="0"><pre class="con-out" id="conOut"></pre></div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="statusbar" id="statusbar">
+    <span id="stLang">C#</span>
+    <span id="stPos">Zeile 1, Spalte 1</span>
+    <span id="stFile"></span>
+    <span class="spacer"></span>
+    <span class="st-credit">Sandkasten by Julian Harder</span>
+    <span class="spacer"></span>
+    <span id="stMsg"></span>
+    <span>UTF-8</span>
+  </footer>
+</div>
+
+<!-- Einstellungen -->
+<div class="popover" id="settingsPop" hidden>
+  <h3>Einstellungen</h3>
+  <label class="row"><span>Schriftgröße</span>
+    <span class="num"><button type="button" data-step="-1">−</button><output id="valFont">14</output><button type="button" data-step="1">+</button></span>
+  </label>
+  <label class="row"><span>Tab-Breite</span>
+    <select id="selTab"><option value="2">2 Leerzeichen</option><option value="4" selected>4 Leerzeichen</option><option value="8">8 Leerzeichen</option></select>
+  </label>
+  <label class="row"><span>Zahlenformat (C#)</span>
+    <select id="selCulture"><option value="de" selected>Deutsch (3,14)</option><option value="en">Englisch (3.14)</option></select>
+  </label>
+  <label class="row"><span>Vorschläge</span><input type="checkbox" id="chkSuggest2" checked></label>
+  <label class="row"><span>Beim Einfügen automatisch einrücken</span><input type="checkbox" id="chkPasteIndent" checked></label>
+  <label class="row"><span>Beim Schließen vor ungespeicherten Dateien warnen</span><input type="checkbox" id="chkWarnClose" checked></label>
+  <p class="hint">Alle Einstellungen werden lokal in diesem Browser gespeichert.</p>
+  <button type="button" class="tbtn" id="btnIntro">Einführung nochmal ansehen</button>
+</div>
+
+<!-- Speichern-Dialog -->
+<div class="modal" id="saveModal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+    <h3 id="saveTitle">Projekt speichern</h3>
+    <label class="field"><span>Ordnername</span><input type="text" id="saveName" spellcheck="false" autocomplete="off" placeholder="MeinRechner"></label>
+    <p class="hint" id="saveHint">Es wird ein Ordner mit diesem Namen am gewählten Speicherort angelegt und alle Dateien werden hineingeschrieben.</p>
+    <div class="dlg-actions">
+      <button type="button" class="tbtn" id="saveCancel">Abbrechen</button>
+      <button type="button" class="tbtn" id="saveZip">Als ZIP</button>
+      <button type="button" class="tbtn primary" id="saveFolder">Speicherort wählen …</button>
+    </div>
+  </div>
+</div>
+
+<!-- Neues Projekt -->
+<div class="modal" id="projModal" hidden>
+  <div class="dialog small" role="dialog" aria-modal="true" aria-labelledby="projTitle">
+    <h3 id="projTitle">Neues Projekt</h3>
+    <label class="field"><span>Name</span><input type="text" id="projNameInput" spellcheck="false" autocomplete="off" placeholder="MeinProjekt"></label>
+    <p class="hint">Das Projekt wird links zu deinen anderen Projekten dieser Sprache hinzugefügt. Die anderen bleiben unverändert.</p>
+    <div class="dlg-actions">
+      <button type="button" class="tbtn" id="projCancel">Abbrechen</button>
+      <button type="button" class="tbtn primary" id="projOk">Anlegen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Projekt öffnen: hinzufügen oder ersetzen -->
+<div class="modal" id="importModal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="impTitle">
+    <h3 id="impTitle">Projekt öffnen</h3>
+    <p id="impText"></p>
+    <label class="field" id="impReplaceRow"><span>Beim Ersetzen wird dieses Projekt entfernt</span><select id="impReplaceSel"></select></label>
+    <p class="hint warn" id="impWarn" hidden></p>
+    <div class="dlg-actions">
+      <button type="button" class="tbtn" id="impCancel">Abbrechen</button>
+      <button type="button" class="tbtn" id="impReplace">Ersetzen</button>
+      <button type="button" class="tbtn primary" id="impAdd">Hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Einführung: kurze Tour, hebt die echten Bedienelemente hervor (nur beim ersten Öffnen) -->
+<div class="modal tour" id="introModal" hidden>
+  <div class="tour-spot" id="tourSpot"></div>
+  <div class="tour-card" id="tourCard" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+    <h3 id="tourTitle"></h3>
+    <p id="tourText"></p>
+    <p class="tour-note" id="tourNote" hidden></p>
+    <div class="tour-foot">
+      <button type="button" class="tbtn" id="introSkip">Überspringen</button>
+      <span class="tour-count" id="tourCount"></span>
+      <button type="button" class="tbtn" id="introBack">Zurück</button>
+      <button type="button" class="tbtn primary" id="introNext">Weiter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Abfrage-Dialog (Dateiname, Bestätigung) -->
+<div class="modal" id="askModal" hidden>
+  <div class="dialog small" role="dialog" aria-modal="true" aria-labelledby="askTitle">
+    <h3 id="askTitle">Frage</h3>
+    <p id="askText"></p>
+    <input type="text" id="askInput" spellcheck="false" autocomplete="off">
+    <div class="dlg-actions">
+      <button type="button" class="tbtn" id="askCancel">Abbrechen</button>
+      <button type="button" class="tbtn primary" id="askOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="ctxmenu" id="ctxMenu" hidden></div>
+<div class="dropzone" id="dropZone" hidden><div>Dateien oder Ordner hier ablegen</div></div>
+<input type="file" id="fileInput" multiple hidden accept=".cs,.py,.txt">
+<input type="file" id="dirInput" webkitdirectory hidden>
+
+<script src="js/runtime/common.js"></script>
+<script src="js/runtime/python/lexer.js"></script>
+<script src="js/runtime/python/parser.js"></script>
+<script src="js/runtime/python/objects.js"></script>
+<script src="js/runtime/python/builtins.js"></script>
+<script src="js/runtime/python/interpreter.js"></script>
+<script src="js/runtime/csharp/lexer.js"></script>
+<script src="js/runtime/csharp/parser.js"></script>
+<script src="js/runtime/csharp/objects.js"></script>
+<script src="js/runtime/csharp/interpreter.js"></script>
+<script src="js/runtime/csharp/library.js"></script>
+<script src="js/runtime/csharp/check.js"></script>
+<script src="js/data/csharp-api.js"></script>
+<script src="js/data/python-api.js"></script>
+<script src="js/data/examples.js"></script>
+<script src="js/editor/history.js"></script>
+<script src="js/editor/highlighter.js"></script>
+<script src="js/editor/autocomplete.js"></script>
+<script src="js/editor/indent.js"></script>
+<script src="js/editor/editor.js"></script>
+<script src="js/layout/splitter.js"></script>
+<script src="js/files/zip.js"></script>
+<script src="js/files/project.js"></script>
+<script src="js/files/storage.js"></script>
+<script src="js/runtime/console.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
